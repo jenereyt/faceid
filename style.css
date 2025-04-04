@@ -1,0 +1,63 @@
+*{
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+.controls{
+    padding: 10px 0 0 10px;
+}
+button{
+    padding: 5px;
+}
+input{
+    padding: 5px;
+}
+
+.table-container {
+    padding: 20px;
+    max-height: 90vh;
+    max-width: 100vw;
+    overflow: auto;
+    margin-top: 20px;
+    border: 1px solid black;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+th, td {
+    border: 1px solid black;
+    padding: 4px;
+    text-align: center;
+    min-width: 60px;
+}
+
+/* Общий стиль для фиксированных заголовков */
+.fixed-header {
+    position: sticky;
+    background: white;
+    z-index: 10;
+    border: 1px solid black;
+}
+
+/* Первая строка (даты) */
+.date-header {
+    top: 0;
+    z-index: 10;
+}
+
+/* Вторая строка (Вход/Выход) */
+.subheader {
+    top: 25px;
+    z-index: 9;
+    font-size: 0.8em;
+    background-color: #dedede;
+}
+
+
+
+.fio {
+    white-space: nowrap;
+}
