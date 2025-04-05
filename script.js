@@ -5,23 +5,20 @@ function formatDate(date) {
     return `${day}.${month}.${year}`;
 }
 
-// Флаг для отслеживания, была ли уже показана ошибка
 let hasShownError = false;
 
 async function fetchEventData() {
     try {
-        // Заглушка для URL сервера, замените на реальный endpoint
-        const response = await fetch('/api/events');
+        const response = await fetch('http://localhost:8000/users');
+
         if (!response.ok) {
-            throw new Error(`Ошибка HTTP: ${response.status}`);
+            throw new Error(`Ошибка HTTP: ${ response.status }`);
         }
         const data = await response.json();
-        // Если данные успешно получены, сбрасываем флаг ошибки
         hasShownError = false;
         return data;
     } catch (error) {
         console.error('Ошибка при загрузке данных:', error);
-        // Показываем ошибку только если она ещё не была показана
         if (!hasShownError) {
             alert('Не удалось загрузить данные с сервера. Попробуйте позже.');
             hasShownError = true;
@@ -42,7 +39,6 @@ async function generateTable() {
 
     const eventData = await fetchEventData();
     if (!eventData || !eventData.length) {
-        // Ошибка уже обработана в fetchEventData, просто выходим
         return;
     }
 
@@ -66,48 +62,51 @@ async function generateTable() {
     }
     subHeaderRow += '</tr>';
 
-    const person = {
-        id: eventData[0].ID,
-        fio: eventData[0].PersonName
-    };
-
-    const eventsByDate = {};
-    currentDate = new Date(dateFrom);
-    for (let i = 0; i < diffDays; i++) {
-        const currentDateStr = currentDate.toISOString().split('T')[0];
-        eventsByDate[currentDateStr] = eventData[0].events.filter(event => event.IN.Date === currentDateStr);
-        currentDate.setDate(currentDate.getDate() + 1);
-    }
-    const maxEvents = Math.max(...Object.values(eventsByDate).map(events => events.length), 1);
-
     let tableContent = headerRow + subHeaderRow;
-    for (let rowIndex = 0; rowIndex < maxEvents; rowIndex++) {
-        let row = '<tr>';
 
-        if (rowIndex === 0) {
-            row += `<td class="fixed-column-1" rowspan="${maxEvents}">${person.id}</td>`;
-            row += `<td class="fixed-column-2 fio" rowspan="${maxEvents}">${person.fio}</td>`;
-        }
+    eventData.forEach((personData, personIndex) => {
+        const person = {
+            id: personData.ID,
+            fio: personData.PersonName
+        };
 
+        const eventsByDate = {};
         currentDate = new Date(dateFrom);
         for (let i = 0; i < diffDays; i++) {
             const currentDateStr = currentDate.toISOString().split('T')[0];
-            const dayEvents = eventsByDate[currentDateStr];
-
-            let inTime = '';
-            let outTime = '';
-
-            if (dayEvents && rowIndex < dayEvents.length) {
-                inTime = dayEvents[rowIndex].IN.Time.slice(0, 5);
-                outTime = dayEvents[rowIndex].OUT ? dayEvents[rowIndex].OUT.Time.slice(0, 5) : '';
-            }
-
-            row += `<td>${inTime}</td><td>${outTime}</td>`;
+            eventsByDate[currentDateStr] = personData.events.filter(event => event.IN.Date === currentDateStr);
             currentDate.setDate(currentDate.getDate() + 1);
         }
-        row += '</tr>';
-        tableContent += row;
-    }
+        const maxEvents = Math.max(...Object.values(eventsByDate).map(events => events.length), 1);
+
+        for (let rowIndex = 0; rowIndex < maxEvents; rowIndex++) {
+            let row = '<tr>';
+
+            if (rowIndex === 0) {
+                row += `<td class="fixed-column-1" rowspan="${maxEvents}">${person.id}</td>`;
+                row += `<td class="fixed-column-2 fio" rowspan="${maxEvents}">${person.fio}</td>`;
+            }
+
+            currentDate = new Date(dateFrom);
+            for (let i = 0; i < diffDays; i++) {
+                const currentDateStr = currentDate.toISOString().split('T')[0];
+                const dayEvents = eventsByDate[currentDateStr];
+
+                let inTime = '';
+                let outTime = '';
+
+                if (dayEvents && rowIndex < dayEvents.length) {
+                    inTime = dayEvents[rowIndex].IN.Time.slice(0, 5);
+                    outTime = dayEvents[rowIndex].OUT ? dayEvents[rowIndex].OUT.Time.slice(0, 5) : '';
+                }
+
+                row += `<td>${inTime}</td><td>${outTime}</td>`;
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+            row += '</tr>';
+            tableContent += row;
+        }
+    });
 
     table.innerHTML = tableContent;
 }
